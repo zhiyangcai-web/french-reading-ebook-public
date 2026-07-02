@@ -2,342 +2,324 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta http-equiv="Cache-Control" content="no-store">
   <title>French Reading Ebook</title>
   <style>
     :root {
-      --bg: #f5f1e9;
-      --paper: #fffdf7;
-      --ink: #202833;
-      --muted: #68737f;
+      --bg: #f4f0e8;
+      --paper: #fffdf8;
+      --ink: #20242d;
+      --muted: #6f7782;
       --line: #d8d0c4;
-      --accent: #006d77;
-      --accent-dark: #034f57;
-      --gold: #fff0b8;
-      --green: #dff3df;
-      --pink: #ffe2ea;
-      --blue: #dcecff;
-      --shadow: 0 18px 45px rgba(49, 42, 34, .13);
+      --accent: #0f766e;
+      --accent-soft: #d9f0ec;
+      --yellow: #fff0a6;
+      --green: #d9f2d8;
+      --pink: #ffdbe8;
+      --blue: #d9eaff;
+      --reader-size: 20px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
+    html,
     body {
       margin: 0;
-      min-height: 100vh;
-      background:
-        linear-gradient(90deg, rgba(0, 109, 119, .06), transparent 36%),
-        linear-gradient(180deg, #fbfaf6, var(--bg));
+      min-height: 100%;
+      background: var(--bg);
       color: var(--ink);
       font-family: Aptos, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      overscroll-behavior: none;
     }
 
-    button, select, input, textarea {
+    body {
+      min-height: 100dvh;
+      overflow: hidden;
+    }
+
+    button,
+    input {
       font: inherit;
     }
 
-    button, select, input {
-      min-height: 40px;
+    button {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--paper);
+      background: rgba(255, 253, 248, .94);
       color: var(--ink);
+      min-height: 40px;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-weight: 800;
+      cursor: pointer;
       touch-action: manipulation;
     }
 
-    button {
-      padding: 8px 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
     button:disabled {
-      opacity: .55;
-      cursor: not-allowed;
+      opacity: .45;
+      cursor: default;
     }
 
-    select, input {
-      padding: 7px 10px;
-      max-width: 100%;
+    input {
+      width: 64px;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 7px 8px;
+      background: rgba(255, 253, 248, .94);
+      color: var(--ink);
+      text-align: center;
+      font-weight: 800;
     }
 
     .app {
-      width: min(1180px, 100%);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      height: 100dvh;
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    }
+
+    .topbar,
+    .bottombar {
+      width: min(860px, 100%);
       margin: 0 auto;
-      padding: 16px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(244, 240, 232, .88);
+      backdrop-filter: blur(14px);
+      z-index: 5;
     }
 
     .topbar {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: end;
-      margin-bottom: 12px;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(216, 208, 196, .7);
+    }
+
+    .book-title {
+      min-width: 0;
     }
 
     h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 17px;
       line-height: 1.2;
       letter-spacing: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .sub {
+    .page-count {
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
-      margin-top: 5px;
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: auto auto minmax(72px, 92px) auto auto auto auto auto;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 12px;
-    }
-
-    .toolbar .primary {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    .toolbar .active {
-      border-color: var(--accent);
-      color: var(--accent-dark);
-      background: #e1f2f1;
-    }
-
-    .swatches {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .swatch {
-      width: 36px;
-      min-height: 36px;
-      padding: 0;
-      border-radius: 999px;
-    }
-
-    .swatch[data-color="yellow"] { background: var(--gold); }
-    .swatch[data-color="green"] { background: var(--green); }
-    .swatch[data-color="pink"] { background: var(--pink); }
-    .swatch[data-color="blue"] { background: var(--blue); }
-
-    .swatch.active {
-      outline: 3px solid rgba(0, 109, 119, .35);
-      border-color: var(--accent);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 220px minmax(0, 1fr) 260px;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .panel, .reader {
-      background: var(--paper);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      box-shadow: 0 12px 30px rgba(49, 42, 34, .08);
-    }
-
-    .panel {
-      padding: 12px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .page-list {
-      display: grid;
-      gap: 6px;
-    }
-
-    .page-tab {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      text-align: left;
-      min-height: 38px;
-      width: 100%;
-    }
-
-    .page-tab.active {
-      background: #e1f2f1;
-      border-color: var(--accent);
-      color: var(--accent-dark);
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      border-radius: 999px;
-      background: #e8f3f2;
-      color: var(--accent-dark);
-      font-weight: 850;
-      padding: 5px 9px;
+      font-size: 13px;
+      font-weight: 800;
       line-height: 1.2;
+      margin-top: 3px;
+    }
+
+    .jump {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 13px;
       white-space: nowrap;
     }
 
-    .reader {
-      min-height: 72vh;
-      padding: clamp(20px, 4vw, 44px);
+    .viewport {
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      padding: 14px 12px 18px;
+      scroll-behavior: smooth;
     }
 
-    .reader-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: baseline;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 12px;
-      margin-bottom: 20px;
+    .page {
+      width: min(780px, 100%);
+      min-height: calc(100dvh - 156px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      margin: 0 auto;
+      padding: clamp(24px, 7vw, 58px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 12px 38px rgba(58, 50, 40, .13);
     }
 
-    .reader-title {
-      margin: 0;
-      font-size: 20px;
-      line-height: 1.3;
-      letter-spacing: 0;
+    .page.turn-next {
+      animation: turnNext .22s ease-out;
     }
 
-    .text-page {
+    .page.turn-prev {
+      animation: turnPrev .22s ease-out;
+    }
+
+    @keyframes turnNext {
+      from {
+        opacity: .4;
+        transform: translateX(22px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes turnPrev {
+      from {
+        opacity: .4;
+        transform: translateX(-22px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .page-label {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .text {
       font-family: Georgia, "Times New Roman", serif;
-      font-size: var(--reader-size, 20px);
-      line-height: 1.78;
-      color: #1e252f;
+      font-size: var(--reader-size);
+      line-height: 1.82;
+      color: #1c222b;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
-    .text-page p {
+    .text p {
       margin: 0 0 1em;
     }
 
-    mark.reader-mark {
-      border-radius: 4px;
-      padding: 0 .08em;
-      color: inherit;
+    .text p:last-child {
+      margin-bottom: 0;
     }
 
-    mark.yellow { background: var(--gold); }
+    mark.reader-mark {
+      border-radius: 3px;
+      color: inherit;
+      padding: .02em .06em;
+    }
+
+    mark.yellow { background: var(--yellow); }
     mark.green { background: var(--green); }
     mark.pink { background: var(--pink); }
     mark.blue { background: var(--blue); }
 
-    .side-head {
+    .bottombar {
+      justify-content: center;
+      border-top: 1px solid rgba(216, 208, 196, .7);
+      flex-wrap: wrap;
+    }
+
+    .nav {
+      width: 44px;
+      font-size: 22px;
+      line-height: 1;
+      padding: 6px 8px;
+    }
+
+    .ghost {
+      background: transparent;
+    }
+
+    .selection-tools {
+      position: fixed;
+      left: 50%;
+      bottom: calc(74px + env(safe-area-inset-bottom));
+      transform: translateX(-50%) translateY(16px);
       display: flex;
-      justify-content: space-between;
       align-items: center;
       gap: 8px;
-    }
-
-    h2 {
-      margin: 0;
-      font-size: 17px;
-      line-height: 1.3;
-      letter-spacing: 0;
-    }
-
-    .mark-list {
-      display: grid;
-      gap: 8px;
-      max-height: 280px;
-      overflow: auto;
-    }
-
-    .mark-item {
-      border: 1px solid var(--line);
-      border-radius: 8px;
       padding: 8px;
-      display: grid;
-      gap: 7px;
-      background: #fffefa;
-    }
-
-    .mark-text {
-      font-size: 14px;
-      line-height: 1.45;
-      color: var(--ink);
-    }
-
-    .mark-actions {
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .small {
-      min-height: 32px;
-      padding: 5px 8px;
-      font-size: 13px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 130px;
-      resize: vertical;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px;
-      background: #fffefa;
-      color: var(--ink);
-      line-height: 1.5;
+      border-radius: 999px;
+      background: rgba(255, 253, 248, .98);
+      box-shadow: 0 14px 34px rgba(31, 35, 42, .22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .16s ease, transform .16s ease;
+      z-index: 20;
     }
 
-    .empty {
+    .selection-tools.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .tool-label {
+      padding: 0 4px 0 6px;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.45;
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
     }
 
-    @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+    .swatch {
+      width: 34px;
+      min-height: 34px;
+      border-radius: 999px;
+      padding: 0;
+    }
 
-      .page-list {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
+    .swatch[data-color="yellow"] { background: var(--yellow); }
+    .swatch[data-color="green"] { background: var(--green); }
+    .swatch[data-color="pink"] { background: var(--pink); }
+    .swatch[data-color="blue"] { background: var(--blue); }
 
-      .toolbar {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-      }
+    .status {
+      position: fixed;
+      left: 50%;
+      bottom: calc(126px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      max-width: min(340px, calc(100vw - 28px));
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(32, 36, 45, .88);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+      z-index: 30;
+      text-align: center;
+    }
+
+    .status.visible {
+      opacity: 1;
     }
 
     @media (max-width: 560px) {
-      .app {
-        padding: 12px;
+      .topbar,
+      .bottombar {
+        padding-left: 10px;
+        padding-right: 10px;
       }
 
-      .topbar {
-        grid-template-columns: 1fr;
+      .page {
+        min-height: calc(100dvh - 146px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        padding: 28px 22px;
       }
 
-      .toolbar {
-        grid-template-columns: 1fr 1fr;
+      .text {
+        line-height: 1.72;
       }
 
-      .toolbar input, .toolbar select {
-        width: 100%;
-      }
-
-      .swatches {
-        grid-column: span 2;
-      }
-
-      .page-list {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .reader {
-        padding: 18px;
-        min-height: 60vh;
+      .ghost.clear {
+        flex-basis: 100%;
       }
     }
   </style>
@@ -345,121 +327,99 @@
 <body>
   <main class="app">
     <header class="topbar">
-      <div>
-        <h1>French Reading Ebook</h1>
-        <div id="meta" class="sub">Loading...</div>
+      <div class="book-title">
+        <h1 id="title">French Reading Ebook</h1>
+        <div id="pageCount" class="page-count">0 / 0</div>
       </div>
-      <span id="progress" class="pill">0 / 0</span>
+      <div class="jump">
+        <input id="jumpInput" type="number" min="1" inputmode="numeric" aria-label="页码">
+        <span id="jumpTotal">/ 0</span>
+        <button id="jumpBtn" type="button">跳转</button>
+      </div>
     </header>
 
-    <section class="toolbar" aria-label="Reader controls">
-      <button id="prevBtn" type="button">←</button>
-      <button id="nextBtn" type="button">→</button>
-      <input id="jumpInput" type="number" min="1" inputmode="numeric" aria-label="Page number" placeholder="页码">
-      <button id="jumpBtn" type="button">跳转</button>
-      <button id="bookmarkBtn" type="button">星标</button>
+    <section id="viewport" class="viewport" aria-label="ebook page">
+      <article id="page" class="page">
+        <div id="pageLabel" class="page-label"></div>
+        <div id="text" class="text"></div>
+      </article>
+    </section>
+
+    <footer class="bottombar">
+      <button id="prevBtn" class="nav" type="button" aria-label="上一页">‹</button>
+      <button id="nextBtn" class="nav" type="button" aria-label="下一页">›</button>
       <button id="sizeDownBtn" type="button">A-</button>
       <button id="sizeUpBtn" type="button">A+</button>
-      <button id="highlightBtn" class="primary" type="button">高亮选中</button>
-      <div class="swatches" aria-label="Highlight color">
-        <button class="swatch active" data-color="yellow" type="button" aria-label="Yellow"></button>
-        <button class="swatch" data-color="green" type="button" aria-label="Green"></button>
-        <button class="swatch" data-color="pink" type="button" aria-label="Pink"></button>
-        <button class="swatch" data-color="blue" type="button" aria-label="Blue"></button>
-      </div>
-    </section>
+      <button id="clearBtn" class="ghost clear" type="button">清除本页高亮</button>
+    </footer>
 
-    <section class="layout">
-      <aside class="panel">
-        <div class="side-head">
-          <h2>Pages</h2>
-          <span id="bookmarkCount" class="pill">0</span>
-        </div>
-        <div id="pageList" class="page-list"></div>
-      </aside>
-
-      <article class="reader">
-        <div class="reader-head">
-          <h2 id="pageTitle" class="reader-title">Page</h2>
-          <span id="pageBadge" class="pill"></span>
-        </div>
-        <div id="textPage" class="text-page"></div>
-      </article>
-
-      <aside class="panel">
-        <div class="side-head">
-          <h2>Highlights</h2>
-          <span id="markCount" class="pill">0</span>
-        </div>
-        <div id="markList" class="mark-list"></div>
-        <div class="side-head">
-          <h2>Notes</h2>
-          <span id="notePage" class="pill"></span>
-        </div>
-        <textarea id="notes" aria-label="Page notes"></textarea>
-      </aside>
-    </section>
+    <div id="selectionTools" class="selection-tools" aria-label="高亮工具">
+      <span class="tool-label">高亮</span>
+      <button class="swatch" data-color="yellow" type="button" aria-label="黄色"></button>
+      <button class="swatch" data-color="green" type="button" aria-label="绿色"></button>
+      <button class="swatch" data-color="pink" type="button" aria-label="粉色"></button>
+      <button class="swatch" data-color="blue" type="button" aria-label="蓝色"></button>
+    </div>
+    <div id="status" class="status"></div>
   </main>
 
   <script>
-    const storage = {
-      state: "reading_ebook_state_v1"
+    const storageKey = "ebook_reader_simple_state_v1";
+    const legacyKey = "reading_ebook_state_v1";
+    const els = {
+      title: document.getElementById("title"),
+      pageCount: document.getElementById("pageCount"),
+      jumpInput: document.getElementById("jumpInput"),
+      jumpTotal: document.getElementById("jumpTotal"),
+      jumpBtn: document.getElementById("jumpBtn"),
+      viewport: document.getElementById("viewport"),
+      page: document.getElementById("page"),
+      pageLabel: document.getElementById("pageLabel"),
+      text: document.getElementById("text"),
+      prevBtn: document.getElementById("prevBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      sizeDownBtn: document.getElementById("sizeDownBtn"),
+      sizeUpBtn: document.getElementById("sizeUpBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      selectionTools: document.getElementById("selectionTools"),
+      status: document.getElementById("status")
     };
 
     let book = null;
     let pages = [];
     let pageIndex = 0;
-    let selectedColor = "yellow";
-    let state = readState();
+    let state = loadState();
+    let lastSelection = null;
+    let toastTimer = 0;
+    let touchStart = null;
 
-    const els = {
-      meta: document.getElementById("meta"),
-      progress: document.getElementById("progress"),
-      pageList: document.getElementById("pageList"),
-      pageTitle: document.getElementById("pageTitle"),
-      pageBadge: document.getElementById("pageBadge"),
-      textPage: document.getElementById("textPage"),
-      jumpInput: document.getElementById("jumpInput"),
-      jumpBtn: document.getElementById("jumpBtn"),
-      prevBtn: document.getElementById("prevBtn"),
-      nextBtn: document.getElementById("nextBtn"),
-      bookmarkBtn: document.getElementById("bookmarkBtn"),
-      bookmarkCount: document.getElementById("bookmarkCount"),
-      highlightBtn: document.getElementById("highlightBtn"),
-      sizeDownBtn: document.getElementById("sizeDownBtn"),
-      sizeUpBtn: document.getElementById("sizeUpBtn"),
-      markList: document.getElementById("markList"),
-      markCount: document.getElementById("markCount"),
-      notes: document.getElementById("notes"),
-      notePage: document.getElementById("notePage")
-    };
-
-    function readState() {
+    function loadState() {
+      const fallback = { pageId: "", fontSize: 20, highlights: {} };
       try {
-        const raw = localStorage.getItem(storage.state);
-        const parsed = raw ? JSON.parse(raw) : {};
-        return {
-          pageId: parsed.pageId || "",
-          size: Number(parsed.size || 20),
-          bookmarks: parsed.bookmarks && typeof parsed.bookmarks === "object" ? parsed.bookmarks : {},
-          highlights: parsed.highlights && typeof parsed.highlights === "object" ? parsed.highlights : {},
-          notes: parsed.notes && typeof parsed.notes === "object" ? parsed.notes : {}
-        };
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+        if (saved) {
+          return {
+            pageId: saved.pageId || "",
+            fontSize: Number(saved.fontSize || 20),
+            highlights: saved.highlights && typeof saved.highlights === "object" ? saved.highlights : {}
+          };
+        }
+        const legacy = JSON.parse(localStorage.getItem(legacyKey) || "null");
+        if (legacy) {
+          return {
+            pageId: legacy.pageId || "",
+            fontSize: Number(legacy.size || 20),
+            highlights: legacy.highlights && typeof legacy.highlights === "object" ? legacy.highlights : {}
+          };
+        }
       } catch (error) {
-        return { pageId: "", size: 20, bookmarks: {}, highlights: {}, notes: {} };
+        return fallback;
       }
+      return fallback;
     }
 
     function saveState() {
-      localStorage.setItem(storage.state, JSON.stringify(state));
-    }
-
-    function currentPage() {
-      return pages[pageIndex] || null;
-    }
-
-    function pageMarks(pageId) {
-      return Array.isArray(state.highlights[pageId]) ? state.highlights[pageId] : [];
+      localStorage.setItem(storageKey, JSON.stringify(state));
     }
 
     function escapeHtml(value) {
@@ -470,31 +430,66 @@
         .replace(/"/g, "&quot;");
     }
 
-    function rangesForText(text, marks) {
-      const ranges = [];
-      for (const mark of marks) {
-        const needle = String(mark.text || "").trim();
-        if (!needle) continue;
-        let start = 0;
-        while (start < text.length) {
-          const index = text.indexOf(needle, start);
-          if (index < 0) break;
-          const end = index + needle.length;
-          if (!ranges.some(range => index < range.end && end > range.start)) {
-            ranges.push({ start: index, end, color: mark.color || "yellow" });
-          }
-          start = end;
-        }
-      }
-      return ranges.sort((a, b) => a.start - b.start);
+    function currentPage() {
+      return pages[pageIndex] || null;
     }
 
-    function markedHtml(text, marks) {
-      const ranges = rangesForText(text, marks);
+    function fullText(page) {
+      return page.paragraphs.join("\n\n");
+    }
+
+    function paragraphOffset(page, paragraphIndex) {
+      let offset = 0;
+      for (let index = 0; index < paragraphIndex; index += 1) {
+        offset += page.paragraphs[index].length + 2;
+      }
+      return offset;
+    }
+
+    function pageHighlights(page) {
+      const raw = Array.isArray(state.highlights[page.id]) ? state.highlights[page.id] : [];
+      const text = fullText(page);
+      let changed = false;
+      const normalized = raw
+        .map(mark => {
+          if (Number.isFinite(mark.start) && Number.isFinite(mark.end)) return mark;
+          const quote = String(mark.text || "").trim();
+          if (!quote) return null;
+          const start = text.indexOf(quote);
+          if (start < 0) return null;
+          changed = true;
+          return {
+            id: mark.id || `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            start,
+            end: start + quote.length,
+            color: mark.color || "yellow",
+            text: quote
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.start - b.start);
+      if (changed) {
+        state.highlights[page.id] = normalized;
+        saveState();
+      }
+      return normalized;
+    }
+
+    function renderSegment(text, baseOffset, marks) {
+      const ranges = marks
+        .filter(mark => mark.end > baseOffset && mark.start < baseOffset + text.length)
+        .map(mark => ({
+          start: Math.max(0, mark.start - baseOffset),
+          end: Math.min(text.length, mark.end - baseOffset),
+          color: mark.color || "yellow"
+        }))
+        .sort((a, b) => a.start - b.start);
       if (!ranges.length) return escapeHtml(text);
+
       let html = "";
       let cursor = 0;
       for (const range of ranges) {
+        if (range.start < cursor) continue;
         html += escapeHtml(text.slice(cursor, range.start));
         html += `<mark class="reader-mark ${range.color}">${escapeHtml(text.slice(range.start, range.end))}</mark>`;
         cursor = range.end;
@@ -503,170 +498,238 @@
       return html;
     }
 
-    function renderPageList() {
-      els.pageList.replaceChildren();
-      for (const [index, page] of pages.entries()) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = `page-tab${index === pageIndex ? " active" : ""}`;
-        button.innerHTML = `<span>${escapeHtml(page.label)}</span><span>${state.bookmarks[page.id] ? "★" : ""}</span>`;
-        button.addEventListener("click", () => setPage(index));
-        els.pageList.appendChild(button);
-      }
-      els.bookmarkCount.textContent = String(Object.values(state.bookmarks).filter(Boolean).length);
-    }
-
-    function renderMarks(page) {
-      const marks = pageMarks(page.id);
-      els.markCount.textContent = String(marks.length);
-      els.markList.replaceChildren();
-      if (!marks.length) {
-        const empty = document.createElement("div");
-        empty.className = "empty";
-        empty.textContent = "No highlights";
-        els.markList.appendChild(empty);
-        return;
-      }
-      for (const mark of marks) {
-        const item = document.createElement("div");
-        item.className = "mark-item";
-        const text = document.createElement("div");
-        text.className = "mark-text";
-        text.textContent = mark.text;
-        const actions = document.createElement("div");
-        actions.className = "mark-actions";
-        const del = document.createElement("button");
-        del.type = "button";
-        del.className = "small";
-        del.textContent = "删除";
-        del.addEventListener("click", () => {
-          state.highlights[page.id] = pageMarks(page.id).filter(item => item.id !== mark.id);
-          saveState();
-          render();
-        });
-        actions.appendChild(del);
-        item.append(text, actions);
-        els.markList.appendChild(item);
-      }
-    }
-
-    function render() {
+    function render(direction = 0) {
       const page = currentPage();
       if (!page) return;
+
       state.pageId = page.id;
       saveState();
-      document.documentElement.style.setProperty("--reader-size", `${state.size}px`);
-      els.meta.textContent = `${book.title} · ${pages.length} pages · ${book.updated}`;
-      els.progress.textContent = `${pageIndex + 1} / ${pages.length}`;
-      els.pageTitle.textContent = page.label;
-      els.pageBadge.textContent = state.bookmarks[page.id] ? "★" : page.number;
-      els.jumpInput.value = "";
+      document.documentElement.style.setProperty("--reader-size", `${state.fontSize}px`);
+      els.title.textContent = book.title || "French Reading Ebook";
+      els.pageCount.textContent = `${pageIndex + 1} / ${pages.length}`;
+      els.jumpInput.value = page.number || pageIndex + 1;
       els.jumpInput.max = String(pages.length);
-      els.bookmarkBtn.textContent = state.bookmarks[page.id] ? "取消星标" : "星标";
-      els.bookmarkBtn.classList.toggle("active", !!state.bookmarks[page.id]);
-      els.notePage.textContent = page.label;
-      els.notes.value = state.notes[page.id] || "";
+      els.jumpTotal.textContent = `/ ${pages.length}`;
+      els.pageLabel.textContent = page.label || `Page ${page.number || pageIndex + 1}`;
+      els.prevBtn.disabled = pageIndex === 0;
+      els.nextBtn.disabled = pageIndex === pages.length - 1;
 
-      const marks = pageMarks(page.id);
-      els.textPage.replaceChildren();
-      for (const paragraph of page.paragraphs) {
+      const marks = pageHighlights(page);
+      els.text.replaceChildren();
+      page.paragraphs.forEach((paragraph, index) => {
         const p = document.createElement("p");
-        p.innerHTML = markedHtml(paragraph, marks);
-        els.textPage.appendChild(p);
+        p.dataset.paragraph = String(index);
+        p.innerHTML = renderSegment(paragraph, paragraphOffset(page, index), marks);
+        els.text.appendChild(p);
+      });
+      els.clearBtn.disabled = marks.length === 0;
+
+      els.page.classList.remove("turn-next", "turn-prev");
+      if (direction) {
+        void els.page.offsetWidth;
+        els.page.classList.add(direction > 0 ? "turn-next" : "turn-prev");
       }
-      renderPageList();
-      renderMarks(page);
+      els.viewport.scrollTop = 0;
+      hideTools();
     }
 
-    function setPage(nextIndex) {
-      pageIndex = Math.min(Math.max(nextIndex, 0), pages.length - 1);
-      render();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    function goTo(index, direction = 0) {
+      const next = Math.min(Math.max(index, 0), pages.length - 1);
+      if (next === pageIndex) return;
+      const actualDirection = direction || (next > pageIndex ? 1 : -1);
+      pageIndex = next;
+      render(actualDirection);
     }
 
     function jump() {
       const value = Number(els.jumpInput.value);
       if (!Number.isFinite(value)) return;
-      const index = pages.findIndex(page => Number(page.number) === value);
-      setPage(index >= 0 ? index : value - 1);
+      const byPageNumber = pages.findIndex(page => Number(page.number) === value);
+      goTo(byPageNumber >= 0 ? byPageNumber : value - 1);
     }
 
-    function addHighlight() {
-      const page = currentPage();
-      if (!page) return;
+    function showStatus(message) {
+      window.clearTimeout(toastTimer);
+      els.status.textContent = message;
+      els.status.classList.add("visible");
+      toastTimer = window.setTimeout(() => els.status.classList.remove("visible"), 1100);
+    }
+
+    function hideTools() {
+      els.selectionTools.classList.remove("visible");
+      lastSelection = null;
+    }
+
+    function nodeOffset(node, offset) {
+      const paragraphs = Array.from(els.text.querySelectorAll("p"));
+      let total = 0;
+      for (const paragraph of paragraphs) {
+        if (paragraph.contains(node)) {
+          const range = document.createRange();
+          range.selectNodeContents(paragraph);
+          range.setEnd(node, offset);
+          return total + range.toString().length;
+        }
+        total += paragraph.textContent.length + 2;
+      }
+      return -1;
+    }
+
+    function readSelection() {
       const selection = window.getSelection();
-      const text = selection ? selection.toString().replace(/\s+/g, " ").trim() : "";
-      if (!text) return;
-      const pageText = page.paragraphs.join(" ");
-      if (!pageText.includes(text)) return;
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return null;
+      const range = selection.getRangeAt(0);
+      if (!els.text.contains(range.commonAncestorContainer)) return null;
+      const start = nodeOffset(range.startContainer, range.startOffset);
+      const end = nodeOffset(range.endContainer, range.endOffset);
+      if (start < 0 || end <= start) return null;
+      const page = currentPage();
+      return {
+        start,
+        end,
+        text: fullText(page).slice(start, end).replace(/\s+/g, " ").trim()
+      };
+    }
+
+    function updateTools() {
+      const selected = readSelection();
+      if (!selected || !selected.text) {
+        els.selectionTools.classList.remove("visible");
+        return;
+      }
+      lastSelection = selected;
+      els.selectionTools.classList.add("visible");
+    }
+
+    function addHighlight(color) {
+      const page = currentPage();
+      const selected = readSelection() || lastSelection;
+      if (!page || !selected || selected.end <= selected.start) {
+        showStatus("先选中文字");
+        return;
+      }
       const mark = {
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-        text,
-        color: selectedColor
+        start: selected.start,
+        end: selected.end,
+        text: selected.text,
+        color
       };
-      state.highlights[page.id] = [...pageMarks(page.id), mark];
-      selection.removeAllRanges();
+      state.highlights[page.id] = [...pageHighlights(page), mark];
+      saveState();
+      const selection = window.getSelection();
+      if (selection) selection.removeAllRanges();
+      render();
+      showStatus("已高亮");
+    }
+
+    function clearPageHighlights() {
+      const page = currentPage();
+      if (!page) return;
+      state.highlights[page.id] = [];
+      saveState();
+      render();
+      showStatus("已清除");
+    }
+
+    function changeFont(delta) {
+      state.fontSize = Math.min(Math.max(Number(state.fontSize || 20) + delta, 16), 30);
       saveState();
       render();
     }
 
-    function changeSize(delta) {
-      state.size = Math.min(Math.max(state.size + delta, 16), 28);
-      saveState();
-      render();
+    function handleTap(event) {
+      if (event.target.closest("button, input, mark")) return;
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) return;
+      const rect = els.viewport.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      if (x < rect.width * .18) goTo(pageIndex - 1, -1);
+      if (x > rect.width * .82) goTo(pageIndex + 1, 1);
     }
 
     function initEvents() {
-      els.prevBtn.addEventListener("click", () => setPage(pageIndex - 1));
-      els.nextBtn.addEventListener("click", () => setPage(pageIndex + 1));
+      els.prevBtn.addEventListener("click", () => goTo(pageIndex - 1, -1));
+      els.nextBtn.addEventListener("click", () => goTo(pageIndex + 1, 1));
       els.jumpBtn.addEventListener("click", jump);
       els.jumpInput.addEventListener("keydown", event => {
         if (event.key === "Enter") jump();
       });
-      els.bookmarkBtn.addEventListener("click", () => {
-        const page = currentPage();
-        if (!page) return;
-        state.bookmarks[page.id] = !state.bookmarks[page.id];
-        saveState();
-        render();
+      els.sizeDownBtn.addEventListener("click", () => changeFont(-1));
+      els.sizeUpBtn.addEventListener("click", () => changeFont(1));
+      els.clearBtn.addEventListener("click", clearPageHighlights);
+      els.viewport.addEventListener("click", handleTap);
+
+      els.selectionTools.addEventListener("pointerdown", event => event.preventDefault());
+      els.selectionTools.querySelectorAll(".swatch").forEach(button => {
+        button.addEventListener("click", () => addHighlight(button.dataset.color || "yellow"));
       });
-      els.highlightBtn.addEventListener("click", addHighlight);
-      els.sizeDownBtn.addEventListener("click", () => changeSize(-1));
-      els.sizeUpBtn.addEventListener("click", () => changeSize(1));
-      els.notes.addEventListener("input", () => {
-        const page = currentPage();
-        if (!page) return;
-        state.notes[page.id] = els.notes.value;
-        saveState();
+
+      document.addEventListener("selectionchange", () => {
+        window.setTimeout(updateTools, 40);
       });
-      for (const button of document.querySelectorAll(".swatch")) {
-        button.addEventListener("click", () => {
-          selectedColor = button.dataset.color || "yellow";
-          document.querySelectorAll(".swatch").forEach(item => item.classList.toggle("active", item === button));
-        });
-      }
+      document.addEventListener("mouseup", () => window.setTimeout(updateTools, 40));
+      document.addEventListener("touchend", () => window.setTimeout(updateTools, 80), { passive: true });
+
+      els.viewport.addEventListener("touchstart", event => {
+        if (event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        touchStart = {
+          x: touch.clientX,
+          y: touch.clientY,
+          time: Date.now()
+        };
+      }, { passive: true });
+
+      els.viewport.addEventListener("touchmove", event => {
+        if (!touchStart || event.touches.length !== 1) return;
+        const touch = event.touches[0];
+        const dx = touch.clientX - touchStart.x;
+        const dy = touch.clientY - touchStart.y;
+        if (Math.abs(dx) > 18 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+          event.preventDefault();
+        }
+      }, { passive: false });
+
+      els.viewport.addEventListener("touchend", event => {
+        if (!touchStart || event.changedTouches.length !== 1) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - touchStart.x;
+        const dy = touch.clientY - touchStart.y;
+        const dt = Date.now() - touchStart.time;
+        touchStart = null;
+        if (dt > 900 || Math.abs(dx) < 52 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
+        if (dx < 0) goTo(pageIndex + 1, 1);
+        if (dx > 0) goTo(pageIndex - 1, -1);
+      }, { passive: true });
+
       window.addEventListener("keydown", event => {
-        const interactive = ["INPUT", "TEXTAREA", "BUTTON", "SELECT"].includes(event.target.tagName);
-        if (interactive) return;
-        if (event.key === "ArrowLeft") setPage(pageIndex - 1);
-        if (event.key === "ArrowRight") setPage(pageIndex + 1);
+        const active = document.activeElement;
+        if (active && ["INPUT", "TEXTAREA", "BUTTON"].includes(active.tagName)) return;
+        if (event.key === "ArrowLeft") goTo(pageIndex - 1, -1);
+        if (event.key === "ArrowRight") goTo(pageIndex + 1, 1);
       });
     }
 
-    async function loadBook() {
-      const response = await fetch(`book.json?v=${Date.now()}`, { cache: "no-store" });
-      if (!response.ok) throw new Error(`Could not load book.json: ${response.status}`);
-      book = await response.json();
-      pages = Array.isArray(book.pages) ? book.pages : [];
-      const savedIndex = pages.findIndex(page => page.id === state.pageId);
-      pageIndex = savedIndex >= 0 ? savedIndex : 0;
-      initEvents();
-      render();
+    function loadBook() {
+      return fetch(`book.json?v=${Date.now()}`, { cache: "no-store" })
+        .then(response => {
+          if (!response.ok) throw new Error(`book.json ${response.status}`);
+          return response.json();
+        })
+        .then(data => {
+          book = data;
+          pages = Array.isArray(book.pages) ? book.pages : [];
+          const savedIndex = pages.findIndex(page => page.id === state.pageId);
+          pageIndex = savedIndex >= 0 ? savedIndex : 0;
+          initEvents();
+          render();
+        });
     }
 
     loadBook().catch(error => {
-      els.meta.textContent = "Failed to load book.json";
-      console.error(error);
+      els.title.textContent = "读取失败";
+      els.pageCount.textContent = String(error.message || error);
     });
   </script>
 </body>
