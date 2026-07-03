@@ -507,8 +507,10 @@
       document.documentElement.style.setProperty("--reader-size", `${state.fontSize}px`);
       els.title.textContent = book.title || "French Reading Ebook";
       els.pageCount.textContent = `${pageIndex + 1} / ${pages.length}`;
-      els.jumpInput.value = page.number || pageIndex + 1;
-      els.jumpInput.max = String(pages.length);
+      els.jumpInput.value = pageIndex + 1;
+      const printedNumbers = pages.map(item => Number(item.number)).filter(Number.isFinite);
+      const maxJump = printedNumbers.reduce((max, value) => Math.max(max, value), pages.length);
+      els.jumpInput.max = String(maxJump);
       els.jumpTotal.textContent = `/ ${pages.length}`;
       els.pageLabel.textContent = page.label || `Page ${page.number || pageIndex + 1}`;
       els.prevBtn.disabled = pageIndex === 0;
@@ -544,8 +546,12 @@
     function jump() {
       const value = Number(els.jumpInput.value);
       if (!Number.isFinite(value)) return;
+      if (value >= 1 && value <= pages.length) {
+        goTo(value - 1);
+        return;
+      }
       const byPageNumber = pages.findIndex(page => Number(page.number) === value);
-      goTo(byPageNumber >= 0 ? byPageNumber : value - 1);
+      if (byPageNumber >= 0) goTo(byPageNumber);
     }
 
     function showStatus(message) {
