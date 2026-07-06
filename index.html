@@ -733,6 +733,17 @@
         });
     }
 
+    function registerOfflineCache() {
+      if (!("serviceWorker" in navigator)) return;
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js").catch(error => {
+          console.warn("Offline cache registration failed", error);
+        });
+      });
+    }
+
+    registerOfflineCache();
+
     loadBook().catch(error => {
       els.title.textContent = "读取失败";
       els.pageCount.textContent = String(error.message || error);
