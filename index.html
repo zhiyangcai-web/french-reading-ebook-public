@@ -198,6 +198,11 @@
       -webkit-user-select: text;
     }
 
+    .text.zh {
+      font-family: "Noto Serif SC", "Songti SC", SimSun, "Microsoft YaHei", serif;
+      line-height: 1.9;
+    }
+
     .text p {
       margin: 0 0 1em;
     }
@@ -350,6 +355,7 @@
       <button id="nextBtn" class="nav" type="button" aria-label="下一页">›</button>
       <button id="sizeDownBtn" type="button">A-</button>
       <button id="sizeUpBtn" type="button">A+</button>
+      <button id="langBtn" type="button">中文</button>
       <button id="clearBtn" class="ghost clear" type="button">清除本页高亮</button>
     </footer>
 
@@ -380,6 +386,7 @@
       nextBtn: document.getElementById("nextBtn"),
       sizeDownBtn: document.getElementById("sizeDownBtn"),
       sizeUpBtn: document.getElementById("sizeUpBtn"),
+      langBtn: document.getElementById("langBtn"),
       clearBtn: document.getElementById("clearBtn"),
       selectionTools: document.getElementById("selectionTools"),
       status: document.getElementById("status")
@@ -394,13 +401,14 @@
     let touchStart = null;
 
     function loadState() {
-      const fallback = { pageId: "", fontSize: 20, highlights: {} };
+      const fallback = { pageId: "", fontSize: 20, language: "fr", highlights: {} };
       try {
         const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
         if (saved) {
           return {
             pageId: saved.pageId || "",
             fontSize: Number(saved.fontSize || 20),
+            language: saved.language === "zh-CN" ? "zh-CN" : "fr",
             highlights: saved.highlights && typeof saved.highlights === "object" ? saved.highlights : {}
           };
         }
@@ -409,6 +417,7 @@
           return {
             pageId: legacy.pageId || "",
             fontSize: Number(legacy.size || 20),
+            language: "fr",
             highlights: legacy.highlights && typeof legacy.highlights === "object" ? legacy.highlights : {}
           };
         }
@@ -434,20 +443,32 @@
       return pages[pageIndex] || null;
     }
 
+    function pageParagraphs(page) {
+      const translated = page.translations && page.translations["zh-CN"];
+      if (state.language === "zh-CN" && Array.isArray(translated)) return translated;
+      return Array.isArray(page.paragraphs) ? page.paragraphs : [];
+    }
+
     function fullText(page) {
-      return page.paragraphs.join("\n\n");
+      return pageParagraphs(page).join("\n\n");
     }
 
     function paragraphOffset(page, paragraphIndex) {
+      const paragraphs = pageParagraphs(page);
       let offset = 0;
       for (let index = 0; index < paragraphIndex; index += 1) {
-        offset += page.paragraphs[index].length + 2;
+        offset += paragraphs[index].length + 2;
       }
       return offset;
     }
 
+    function highlightKey(page) {
+      return state.language === "zh-CN" ? `${page.id}:zh-CN` : page.id;
+    }
+
     function pageHighlights(page) {
-      const raw = Array.isArray(state.highlights[page.id]) ? state.highlights[page.id] : [];
+      const key = highlightKey(page);
+      const raw = Array.isArray(state.highlights[key]) ? state.highlights[key] : [];
       const text = fullText(page);
       let changed = false;
       const normalized = raw
@@ -469,7 +490,7 @@
         .filter(Boolean)
         .sort((a, b) => a.start - b.start);
       if (changed) {
-        state.highlights[page.id] = normalized;
+        state.highlights[key] = normalized;
         saveState();
       }
       return normalized;
@@ -507,6 +528,10 @@
       document.documentElement.style.setProperty("--reader-size", `${state.fontSize}px`);
       els.title.textContent = book.title || "French Reading Ebook";
       els.pageCount.textContent = `${pageIndex + 1} / ${pages.length}`;
+      els.langBtn.textContent = state.language === "zh-CN" ? "法语" : "中文";
+      els.langBtn.setAttribute("aria-label", state.language === "zh-CN" ? "切换到法语" : "切换到中文");
+      els.text.classList.toggle("zh", state.language === "zh-CN");
+      els.text.lang = state.language;
       els.jumpInput.value = pageIndex + 1;
       const printedNumbers = pages.map(item => Number(item.number)).filter(Number.isFinite);
       const maxJump = printedNumbers.reduce((max, value) => Math.max(max, value), pages.length);
@@ -518,7 +543,7 @@
 
       const marks = pageHighlights(page);
       els.text.replaceChildren();
-      page.paragraphs.forEach((paragraph, index) => {
+      pageParagraphs(page).forEach((paragraph, index) => {
         const p = document.createElement("p");
         p.dataset.paragraph = String(index);
         p.innerHTML = renderSegment(paragraph, paragraphOffset(page, index), marks);
@@ -552,6 +577,15 @@
       }
       const byPageNumber = pages.findIndex(page => Number(page.number) === value);
       if (byPageNumber >= 0) goTo(byPageNumber);
+    }
+
+    function toggleLanguage() {
+      state.language = state.language === "zh-CN" ? "fr" : "zh-CN";
+      saveState();
+      const selection = window.getSelection();
+      if (selection) selection.removeAllRanges();
+      render();
+      showStatus(state.language === "zh-CN" ? "已切到中文" : "已切到法语");
     }
 
     function showStatus(message) {
@@ -621,7 +655,7 @@
         text: selected.text,
         color
       };
-      state.highlights[page.id] = [...pageHighlights(page), mark];
+      state.highlights[highlightKey(page)] = [...pageHighlights(page), mark];
       saveState();
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
@@ -632,7 +666,7 @@
     function clearPageHighlights() {
       const page = currentPage();
       if (!page) return;
-      state.highlights[page.id] = [];
+      state.highlights[highlightKey(page)] = [];
       saveState();
       render();
       showStatus("已清除");
@@ -661,6 +695,7 @@
       els.jumpInput.addEventListener("keydown", event => {
         if (event.key === "Enter") jump();
       });
+      els.langBtn.addEventListener("click", toggleLanguage);
       els.sizeDownBtn.addEventListener("click", () => changeFont(-1));
       els.sizeUpBtn.addEventListener("click", () => changeFont(1));
       els.clearBtn.addEventListener("click", clearPageHighlights);
