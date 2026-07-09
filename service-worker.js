@@ -1,4 +1,4 @@
-const CACHE_NAME = "french-reading-ebook-v20260706-zh2";
+const CACHE_NAME = "french-reading-ebook-v20260709-scroll";
 
 function scopedRequest(path) {
   return new Request(new URL(path, self.registration.scope).toString(), {

@@ -519,9 +519,28 @@
       return html;
     }
 
-    function render(direction = 0) {
+    function readScrollSnapshot() {
+      const max = Math.max(1, els.viewport.scrollHeight - els.viewport.clientHeight);
+      return {
+        top: els.viewport.scrollTop,
+        ratio: els.viewport.scrollTop / max
+      };
+    }
+
+    function restoreScroll(snapshot, mode) {
+      const apply = () => {
+        const max = Math.max(0, els.viewport.scrollHeight - els.viewport.clientHeight);
+        const target = mode === "ratio" ? Math.round(snapshot.ratio * max) : snapshot.top;
+        els.viewport.scrollTop = Math.min(Math.max(target, 0), max);
+      };
+      apply();
+      window.requestAnimationFrame(apply);
+    }
+
+    function render(direction = 0, options = {}) {
       const page = currentPage();
       if (!page) return;
+      const scrollSnapshot = options.keepScroll ? readScrollSnapshot() : null;
 
       state.pageId = page.id;
       saveState();
@@ -556,7 +575,11 @@
         void els.page.offsetWidth;
         els.page.classList.add(direction > 0 ? "turn-next" : "turn-prev");
       }
-      els.viewport.scrollTop = 0;
+      if (scrollSnapshot) {
+        restoreScroll(scrollSnapshot, options.keepScroll);
+      } else {
+        els.viewport.scrollTop = 0;
+      }
       hideTools();
     }
 
@@ -584,7 +607,7 @@
       saveState();
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
-      render();
+      render(0, { keepScroll: "ratio" });
       showStatus(state.language === "zh-CN" ? "已切到中文" : "已切到法语");
     }
 
@@ -659,7 +682,7 @@
       saveState();
       const selection = window.getSelection();
       if (selection) selection.removeAllRanges();
-      render();
+      render(0, { keepScroll: "top" });
       showStatus("已高亮");
     }
 
@@ -668,14 +691,14 @@
       if (!page) return;
       state.highlights[highlightKey(page)] = [];
       saveState();
-      render();
+      render(0, { keepScroll: "top" });
       showStatus("已清除");
     }
 
     function changeFont(delta) {
       state.fontSize = Math.min(Math.max(Number(state.fontSize || 20) + delta, 16), 30);
       saveState();
-      render();
+      render(0, { keepScroll: "ratio" });
     }
 
     function handleTap(event) {
